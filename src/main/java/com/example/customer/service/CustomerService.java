@@ -1,5 +1,7 @@
 package com.example.customer.service;
 
+import com.example.customer.dto.CreateCustomerRequest;
+import com.example.customer.dto.CustomerResponse;
 import com.example.customer.domain.Customer;
 import com.example.customer.repository.CustomerRepository;
 import org.springframework.stereotype.Service;
@@ -15,17 +17,39 @@ public class CustomerService {
         this.repository = repository;
     }
 
-    public Customer create(Customer customer) {
-        return repository.save(customer);
+    public CustomerResponse create(CreateCustomerRequest request) {
+
+        Customer customer =
+                new Customer(request.getName(), request.getEmail());
+
+        Customer saved = repository.save(customer);
+
+        return toResponse(saved);
     }
 
-    public List<Customer> findAll() {
-        return repository.findAll();
+    public List<CustomerResponse> findAll() {
+
+        return repository.findAll()
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
-    public Customer findById(Long id) {
-        return repository.findById(id)
+    public CustomerResponse findById(Long id) {
+
+        Customer customer = repository.findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException("Customer not found: " + id));
+                        new CustomerNotFoundException(id));
+
+        return toResponse(customer);
+    }
+
+    private CustomerResponse toResponse(Customer customer) {
+
+        return new CustomerResponse(
+                customer.getId(),
+                customer.getName(),
+                customer.getEmail()
+        );
     }
 }

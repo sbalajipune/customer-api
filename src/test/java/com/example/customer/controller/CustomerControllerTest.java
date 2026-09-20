@@ -1,6 +1,7 @@
 package com.example.customer.controller;
 
-import com.example.customer.domain.Customer;
+import com.example.customer.dto.CreateCustomerRequest;
+import com.example.customer.dto.CustomerResponse;
 import com.example.customer.service.CustomerService;
 import org.junit.jupiter.api.Test;
 
@@ -18,27 +19,28 @@ class CustomerControllerTest {
     private final CustomerController controller = new CustomerController(service);
 
     @Test
-    void healthReturnsRunningMessage() {
-        assertEquals("Customer API is running!", controller.health());
-    }
-
-    @Test
     void createDelegatesToService() {
-        Customer customer = new Customer("Ada Lovelace", "ada@example.com");
-        when(service.create(customer)).thenReturn(customer);
+        CreateCustomerRequest request = new CreateCustomerRequest();
+        request.setName("Ada Lovelace");
+        request.setEmail("ada@example.com");
 
-        Customer result = controller.create(customer);
+        CustomerResponse expected = new CustomerResponse(1L, "Ada Lovelace", "ada@example.com");
+        when(service.create(request)).thenReturn(expected);
 
-        assertSame(customer, result);
-        verify(service).create(customer);
+        CustomerResponse result = controller.create(request);
+
+        assertSame(expected, result);
+        verify(service).create(request);
     }
 
     @Test
     void findAllDelegatesToService() {
-        List<Customer> customers = List.of(new Customer("Ada Lovelace", "ada@example.com"));
+        List<CustomerResponse> customers = List.of(
+                new CustomerResponse(1L, "Ada Lovelace", "ada@example.com")
+        );
         when(service.findAll()).thenReturn(customers);
 
-        List<Customer> result = controller.findAll();
+        List<CustomerResponse> result = controller.findAll();
 
         assertEquals(customers, result);
         verify(service).findAll();
@@ -46,10 +48,10 @@ class CustomerControllerTest {
 
     @Test
     void findByIdDelegatesToService() {
-        Customer customer = new Customer("Ada Lovelace", "ada@example.com");
+        CustomerResponse customer = new CustomerResponse(1L, "Ada Lovelace", "ada@example.com");
         when(service.findById(1L)).thenReturn(customer);
 
-        Customer result = controller.findById(1L);
+        CustomerResponse result = controller.findById(1L);
 
         assertSame(customer, result);
         verify(service).findById(1L);

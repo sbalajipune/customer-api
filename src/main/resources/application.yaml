@@ -11,8 +11,23 @@ spring:
       ddl-auto: update
     show-sql: true
 
+info:
+  app:
+    name: Customer API
+    version: 1.0.0
+    description: Enterprise Customer API
+
 management:
   endpoints:
     web:
       exposure:
         include: health,info
+
+  info:
+    env:
+      enabled: true
+
+  endpoint:
+    health:
+      probes:
+        enabled: true

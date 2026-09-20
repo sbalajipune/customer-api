@@ -1,7 +1,9 @@
 package com.example.customer.controller;
 
-import com.example.customer.domain.Customer;
+import com.example.customer.dto.CreateCustomerRequest;
+import com.example.customer.dto.CustomerResponse;
 import com.example.customer.service.CustomerService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,24 +19,23 @@ public class CustomerController {
         this.service = service;
     }
 
-    @GetMapping("/health")
-    public String health() {
-        return "Customer API is running!";
-    }
-
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Customer create(@RequestBody Customer customer) {
-        return service.create(customer);
+    public CustomerResponse create(
+            @Valid @RequestBody CreateCustomerRequest request) {
+
+        return service.create(request);
     }
 
     @GetMapping
-    public List<Customer> findAll() {
+    public List<CustomerResponse> findAll() {
         return service.findAll();
     }
 
     @GetMapping("/{id}")
-    public Customer findById(@PathVariable Long id) {
+    public CustomerResponse findById(
+            @PathVariable Long id) {
+
         return service.findById(id);
     }
 }

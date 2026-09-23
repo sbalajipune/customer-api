@@ -1,61 +1,112 @@
 # Customer API
 
-A Spring Boot REST API for managing customers with PostgreSQL and Spring Data JPA.
+A Spring Boot REST API for managing customers with PostgreSQL, Spring Data JPA, Flyway, validation, and OpenAPI support.
 
-## Requirements
+## Overview
 
+This project exposes a simple customer management API with CRUD-style operations and a PostgreSQL-backed persistence layer. It includes:
+
+- Spring Boot 4.1.1
 - Java 21
-- PostgreSQL 17 or compatible
-- Maven Wrapper (included)
+- PostgreSQL database integration
+- Flyway schema migration support
+- Spring Validation for request payloads
+- Global exception handling
+- Actuator health endpoint
+- OpenAPI documentation via SpringDoc
+- Unit tests for controller behavior
 
-## Database Setup
+## Prerequisites
 
-Create a PostgreSQL database named `customerdb` and make it available at `localhost:5433`.
-The default development credentials are:
+- Java 21+
+- Maven Wrapper included in the repo
+- PostgreSQL 15+ (17 recommended)
 
+## Database setup
+
+Create a PostgreSQL database named `customerdb` and ensure it is reachable at `localhost:5433`.
+
+Default development configuration:
+
+- Host: `localhost`
+- Port: `5433`
+- Database: `customerdb`
 - Username: `postgres`
 - Password: `postgres`
 
-Override the connection settings with environment variables when needed:
+These defaults are defined in `src/main/resources/application.yaml` and `pom.xml`.
+
+### Override with environment variables
 
 ```powershell
-$env:SPRING_DATASOURCE_URL="jdbc:postgresql://localhost:5433/customerdb"
+$env:SPRING_DATASOURCE_URL="jdbc:postgresql://localhost:5433/customerdb?serverTimezone=UTC"
 $env:SPRING_DATASOURCE_USERNAME="postgres"
-$env:SPRING_DATASOURCE_PASSWORD="your-password"
+$env:SPRING_DATASOURCE_PASSWORD="postgres"
 ```
 
-For production, use secure secret management instead of storing credentials in configuration files.
+> For production, prefer managed secrets and environment-based configuration instead of hard-coded credentials.
 
-## Run Locally
+## Run locally
 
-From the project root:
+From the project root, start the application:
+
+```powershell
+./mvnw spring-boot:run
+```
+
+On Windows PowerShell, you can also use:
 
 ```powershell
 .\mvnw.cmd spring-boot:run
 ```
 
-The API starts on `http://localhost:8080`.
+The app runs on:
 
-## Test
+- `http://localhost:8080`
 
-Run all unit and application-context tests:
+## Health and API documentation
 
-```powershell
-.\mvnw.cmd test
+The project exposes:
+
+- Actuator health: `http://localhost:8080/actuator/health`
+- Actuator info: `http://localhost:8080/actuator/info`
+- OpenAPI Swagger UI: `http://localhost:8080/swagger-ui/index.html`
+
+The `info` endpoint includes application metadata configured in `application.yaml`, such as:
+
+- app name: `Customer API`
+- version: `1.0.0`
+- description: `Enterprise Customer API`
+
+Example:
+
+```bash
+curl http://localhost:8080/actuator/info
 ```
 
-## API Endpoints
+Example output:
+
+```json
+{
+  "app": {
+    "name": "Customer API",
+    "version": "1.0.0",
+    "description": "Enterprise Customer API"
+  }
+}
+```
+
+## API endpoints
 
 Base path: `/api/v1/customers`
 
 | Method | Endpoint | Description |
 | --- | --- | --- |
-| `GET` | `/api/v1/customers/health` | Check API health |
 | `POST` | `/api/v1/customers` | Create a customer |
 | `GET` | `/api/v1/customers` | List all customers |
-| `GET` | `/api/v1/customers/{id}` | Get a customer by ID |
+| `GET` | `/api/v1/customers/{id}` | Fetch a customer by ID |
 
-### Create a customer
+### Create customer
 
 ```powershell
 Invoke-RestMethod `
@@ -64,8 +115,6 @@ Invoke-RestMethod `
   -ContentType "application/json" `
   -Body '{"name":"Ada Lovelace","email":"ada@example.com"}'
 ```
-
-Alternatively, with `curl`:
 
 ```bash
 curl -X POST http://localhost:8080/api/v1/customers \
@@ -83,7 +132,7 @@ Invoke-RestMethod -Method Get -Uri "http://localhost:8080/api/v1/customers"
 curl http://localhost:8080/api/v1/customers
 ```
 
-### Get a customer by ID
+### Get customer by ID
 
 ```powershell
 Invoke-RestMethod -Method Get -Uri "http://localhost:8080/api/v1/customers/1"
@@ -93,7 +142,69 @@ Invoke-RestMethod -Method Get -Uri "http://localhost:8080/api/v1/customers/1"
 curl http://localhost:8080/api/v1/customers/1
 ```
 
+## Data model
+
+The customer record includes:
+
+- `id`: generated primary key
+- `name`: required customer name
+- `email`: required and unique
+
+The schema is created by the Flyway migration in:
+
+- `src/main/resources/db/migration/V1__create_customers_table.sql`
+
+## Validation and errors
+
+The API validates request bodies and returns structured error responses for:
+
+- invalid input payloads
+- missing or malformed customer data
+- customer lookup failures (404 responses)
+
+## Testing
+
+Run the project tests:
+
+```powershell
+./mvnw test
+```
+
+or on Windows:
+
+```powershell
+.\mvnw.cmd test
+```
+
+## Project structure
+
+```text
+src/
+  main/
+    java/com/example/customer/
+      controller/
+      domain/
+      dto/
+      repository/
+      service/
+      GlobalExceptionHandler.java
+      CustomerApiApplication.java
+    resources/
+      application.yaml
+      db/migration/V1__create_customers_table.sql
+  test/
+    java/com/example/customer/
+```
+
 ## Configuration
 
-Application configuration is in `src/main/resources/application.properties`.
-Hibernate is configured with `ddl-auto=update`, so the `customers` table is created or updated automatically during startup.
+Application settings are in:
+
+- `src/main/resources/application.yaml`
+
+Key configuration includes:
+
+- datasource connection values
+- JPA Hibernate settings
+- app metadata and info endpoints
+- actuator exposure for health and info

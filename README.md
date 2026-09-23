@@ -19,7 +19,7 @@ The default development credentials are:
 Override the connection settings with environment variables when needed:
 
 ```powershell
-$env:SPRING_DATASOURCE_URL="jdbc:postgresql://localhost:5432/customerdb"
+$env:SPRING_DATASOURCE_URL="jdbc:postgresql://localhost:5433/customerdb"
 $env:SPRING_DATASOURCE_USERNAME="postgres"
 $env:SPRING_DATASOURCE_PASSWORD="your-password"
 ```
